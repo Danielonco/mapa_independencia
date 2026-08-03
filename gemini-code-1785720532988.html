@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Interactivo - CESFAM Dr. Agustín Cruz Melo</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        #header { background: #1f2937; color: white; padding: 12px 20px; text-align: center; }
+        #header h1 { margin: 0; font-size: 1.2rem; }
+        #header p { margin: 3px 0 0 0; font-size: 0.85rem; color: #9ca3af; }
+        #map { width: 100%; height: 500px; border-radius: 8px; }
+        .popup-content h3 { margin: 0 0 5px 0; color: #111827; font-size: 1rem; }
+        .popup-content span { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; color: white; margin-bottom: 8px; }
+        .bg-salud { background-color: #ef4444; }
+        .bg-academia { background-color: #3b82f6; }
+        .bg-transporte { background-color: #f59e0b; }
+        .bg-cultura { background-color: #10b981; }
+        .bg-cesfam { background-color: #8b5cf6; }
+    </style>
+</head>
+<body>
+
+<div id="header">
+    <h1>Actores Comunitarios — CESFAM Dr. Agustín Cruz Melo</h1>
+    <p>Comuna de Independencia, Santiago de Chile | Red de Salud, Gobernanza y Territorio</p>
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // Inicializar mapa centrado en CESFAM Agustín Cruz Melo (Bezanilla 1285, Independencia)
+    var map = L.map('map').setView([-33.4185, -70.6550], 16);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Marcador principal: CESFAM Agustín Cruz Melo
+    var mainIcon = L.divIcon({
+        className: 'custom-div-icon',
+        html: "<div style='background-color:#8b5cf6;width:18px;height:18px;border-radius:50%;border:3px solid white;box-shadow: 0 0 5px rgba(0,0,0,0.5);'></div>",
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+
+    // Lista de Actores Comunitarios
+    var actores = [
+        {
+            nombre: "CESFAM Dr. Agustín Cruz Melo",
+            categoria: "Centro Base (Salud)",
+            bgClass: "bg-cesfam",
+            lat: -33.4185,
+            lng: -70.6550,
+            distancia: "0 m (Bezanilla 1285)",
+            rol: "<b>Líder Territorial de Atención Primaria:</b> Articulador de la red de salud local, coordinador general de la atención de salud familiar y facilitador del Consejo de Desarrollo Local (CDL)."
+        },
+        {
+            nombre: "Hospital Clínico Universidad de Chile",
+            categoria: "Salud / Academia",
+            bgClass: "bg-salud",
+            lat: -33.4198,
+            lng: -70.6542,
+            distancia: "~400 m",
+            rol: "<b>Socio Docente-Asistencial:</b> Derivaciones de alta complejidad, campos clínicos compartidos, capacitación a equipos de atención primaria e investigación participativa comunitaria."
+        },
+        {
+            nombre: "COSAM Independencia",
+            categoria: "Salud Mental",
+            bgClass: "bg-salud",
+            lat: -33.4162,
+            lng: -70.6558,
+            distancia: "~500 m",
+            rol: "<b>Co-gestor de Salud Mental:</b> Mesas técnicas intersectoriales para apoyo psicosocial, atención especializada y programas comunitarios de prevención de adicciones."
+        },
+        {
+            nombre: "Hospital San José / Roberto del Río",
+            categoria: "Salud Secundaria/Terciaria",
+            bgClass: "bg-salud",
+            lat: -33.4145,
+            lng: -70.6548,
+            distancia: "~800 m",
+            rol: "<b>Articulador de Red Hospitalaria:</b> Protocolos de continuidad asistencial, interconsultas de especialidad y contra-referencia de pacientes pediátricos y adultos."
+        },
+        {
+            nombre: "Facultad de Medicina - U. de Chile",
+            categoria: "Academia",
+            bgClass: "bg-academia",
+            lat: -33.4189,
+            lng: -70.6528,
+            distancia: "~400 m",
+            rol: "<b>Co-diseñador de Capacidades y Políticas:</b> Vinculación con el medio, prácticas de estudiantes de salud, diagnóstico epidemiológico territorial y formación de dirigentes comunitarios."
+        },
+        {
+            nombre: "Estación Metro Hospitales (Línea 3)",
+            categoria: "Transporte",
+            bgClass: "bg-transporte",
+            lat: -33.4172,
+            lng: -70.6521,
+            distancia: "~400 m",
+            rol: "<b>Enlace de Accesibilidad y Movilidad Urbana:</b> Trabajo conjunto con Metro/DTPM para garantizar rutas peatonales seguras y accesibilidad universal para adultos mayores y personas con discapacidad."
+        },
+        {
+            nombre: "Corredor Av. Independencia",
+            categoria: "Transporte",
+            bgClass: "bg-transporte",
+            lat: -33.4182,
+            lng: -70.6533,
+            distancia: "~200 m",
+            rol: "<b>Eje de Conectividad Comunal:</b> Gestión de paraderos seguros, sincronización de semáforos y facilitación del acceso al CESFAM en transporte público."
+        },
+        {
+            nombre: "Municipalidad / Depto. de Cultura Independencia",
+            categoria: "Cultura y Territorio",
+            bgClass: "bg-cultura",
+            lat: -33.4132,
+            lng: -70.6575,
+            distancia: "~800 m",
+            rol: "<b>Promotor Territorial y Financiero:</b> Co-financiamiento de iniciativas comunitarias, articulación municipal, permisos de uso de espacio público e integración cultural."
+        },
+        {
+            nombre: "Plaza Chacabuco / Parques Comunitarios",
+            categoria: "Cultura y Territorio",
+            bgClass: "bg-cultura",
+            lat: -33.4102,
+            lng: -70.6545,
+            distancia: "~1.1 km",
+            rol: "<b>Espacio Co-gestionado de Salud Promocional:</b> Escenario de plazas saludables, ferias informativas, actividades de educación física para la comunidad y ferias culturales."
+        }
+    ];
+
+    // Radio de influencia directa (500m) e indirecta (1000m)
+    L.circle([-33.4185, -70.6550], { color: '#8b5cf6', fillColor: '#8b5cf6', fillOpacity: 0.1, radius: 500 }).addTo(map);
+    L.circle([-33.4185, -70.6550], { color: '#9ca3af', fillColor: '#9ca3af', fillOpacity: 0.05, radius: 1000 }).addTo(map);
+
+    // Dibujar marcadores y popups
+    actores.forEach(function(actor) {
+        var marker = L.marker([actor.lat, actor.lng]).addTo(map);
+        
+        var popupText = `
+            <div class="popup-content">
+                <span class="${actor.bgClass}">${actor.categoria}</span>
+                <h3>${actor.nombre}</h3>
+                <p style="margin: 4px 0;"><strong>Distancia aproximada:</strong> ${actor.distancia}</p>
+                <p style="margin: 4px 0;"><strong>Rol de Gobernanza:</strong> ${actor.rol}</p>
+            </div>
+        `;
+        
+        marker.bindPopup(popupText);
+    });
+</script>
+
+</body>
+</html>
